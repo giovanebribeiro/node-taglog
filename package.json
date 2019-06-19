@@ -1,8 +1,11 @@
 {
   "name": "taglog",
   "version": "0.0.0",
-  "description": "a tool to generate git tags with messages based on git commits since last tag",
+  "description": "A tool to generate git tags with messages based on git commits since last tag",
   "main": "index.js",
+  "bin":{
+    "taglog": "bin.js"
+  },
   "scripts": {
     "start": "DEBUG=taglog:* node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,6 +29,9 @@
   "homepage": "https://github.com/giovanebribeiro/node-taglog#readme",
   "dependencies": {
     "command-exists": "1.2.8",
-    "debug": "4.1.1"
+    "cosmiconfig": "5.2.1",
+    "debug": "4.1.1",
+    "meow": "5.0.0",
+    "read-pkg": "5.1.1"
   }
 }
