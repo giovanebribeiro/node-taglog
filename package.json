@@ -1,0 +1,29 @@
+{
+  "name": "taglog",
+  "version": "0.0.0",
+  "description": "a tool to generate git tags with messages based on git commits since last tag",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giovanebribeiro/node-taglog.git"
+  },
+  "keywords": [
+    "node",
+    "git",
+    "tags",
+    "commits",
+    "changelog"
+  ],
+  "author": "Giovane Boaviagem <giovanebribeiro@gmail.com> (http://about.me/giovanebribeiro)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/giovanebribeiro/node-taglog/issues"
+  },
+  "homepage": "https://github.com/giovanebribeiro/node-taglog#readme",
+  "dependencies": {
+    "command-exists": "1.2.8"
+  }
+}
