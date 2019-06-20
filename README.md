@@ -1,12 +1,12 @@
 # taglog
 
-![npm](https://img.shields.io/npm/v/taglog.svg)
+![npm](https://img.shields.io/npm/v/@giovanebribeiro/taglog.svg)
 
 A tool to generate git tags with messages based on git commits since last tag
 
 ## Installation
 
-`$ npm install --save-dev taglog`
+`$ npm install --save-dev @giovanebribeiro/taglog`
 
 ## Configuration and usage
 
@@ -19,10 +19,10 @@ file:
 {
  ...
  "taglog": {
-    "lineFormat": "* %h %s", // the line format for 'git-log --pretty'. This is the default option
-    "tagPrefix": "v", // the tag prefix. This is the default option.
-    "tagTitle": "Custom release version title %s" // some custom title for the tag message. '%s' is replaced by the new tag name. 
-                                                  // The default option is: 'Release version <new_tag_name>'
+    "lineFormat": "* %h %s", /*the line format for 'git-log --pretty'. This is the default option*/
+    "tagPrefix": "v", /*the tag prefix. This is the default option.*/
+    "tagTitle": "Custom release version title %s" /*some custom title for the tag message. '%s' is replaced by the new tag name. 
+                                                    The default option is: 'Release version <new_tag_name>'*/
   },
   "scripts": {
     "build": "npm version --no-git-tag-version ",

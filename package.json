@@ -1,5 +1,5 @@
 {
-  "name": "taglog",
+  "name": "@giovanebribeiro/taglog",
   "version": "0.0.1",
   "description": "A tool to generate git tags with messages based on git commits since last tag (changelog)",
   "main": "index.js",
@@ -15,7 +15,7 @@
     "start": "DEBUG=taglog:* ./bin.js",
     "build": "npm version --no-git-tag-version ",
     "version": "git commit -am \"build: release version\" && ./bin.js $npm_package_version",
-    "postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags && npm publish --access=public"
   },
   "repository": {
     "type": "git",
@@ -41,5 +41,6 @@
     "meow": "5.0.0",
     "read-pkg": "5.1.1",
     "uuid": "3.3.2"
-  }
+  },
+  "devDependencies": {}
 }
