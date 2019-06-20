@@ -12,7 +12,9 @@
   },
   "scripts": {
     "start": "DEBUG=taglog:* ./bin.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm version --no-git-tag-version ",
+    "version": "git commit -am \"build: release version\" ./bin.js $npm_package_version",
+    "postversion": "git push --follow-tags"
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,7 @@
     "cosmiconfig": "5.2.1",
     "debug": "4.1.1",
     "meow": "5.0.0",
-    "read-pkg": "5.1.1"
+    "read-pkg": "5.1.1",
+    "uuid": "3.3.2"
   }
 }

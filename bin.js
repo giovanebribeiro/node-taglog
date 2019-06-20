@@ -10,7 +10,7 @@ const cli = meow(`
 
   Example:
     $ taglog 1.0.0
-    Processing...
+    Processing 1.0.0 tag...
     Tag 1.0.0 successfully created
   `, {});
 

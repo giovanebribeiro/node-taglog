@@ -7,7 +7,10 @@ const debug = require('debug')('taglog:index.js');
 const path = require('path');
 const readPkg = require('read-pkg');
 const explorer = require('cosmiconfig')('taglog');
-const spawn = require('child_process').spawn;
+const uuid = require('uuid/v1');
+const fs = require('fs');
+const writeFile = util.promisify(fs.writeFile);
+const deleteFile = util.promisify(fs.unlink);
 
 async function execCommand(cmd){
   debug('run command: ', cmd)
@@ -45,6 +48,8 @@ async function main(argv){
   if(!actualTag) throw new Error('The actual tag is required.');
   debug('actualTag = ', actualTag);
 
+  console.log(`Processing ${actualTag} tag...`);
+
   let nLine = '\n';
   if(process.platform === 'win32') nLine = '\r' + nLine;
   
@@ -57,19 +62,32 @@ async function main(argv){
   debug('lastTag: ', lastTag);
   
   const changelog = await execCommand('git log --pretty=format:\'' + lineFormat + '\' ' + lastTag + '..HEAD');
-  debug('changelog: ', changelog);
+  debug(`changelog: ${changelog}`);
 
-  let tagMessage = '# Release Version ' + actualTag + nLine + nLine;
+  let tagMessage = 'Release Version ' + actualTag + nLine + nLine;
   tagMessage += changelog;
+  tagMessage += nLine;
   debug('tagMessage = \n', tagMessage);
 
   if(output === 'tag'){
-    const echoMessage = spawn('shx', ['echo', tagMessage]);
-    const gitTag = spawn('git', ['tag', tagPrefix + actualTag, '-a', '-F', ' - ']);
+    const tempFile = './.' + uuid();
+    
+    let stderr = await writeFile(tempFile, tagMessage);
+    if(stderr){
+      throw new Error('Some error happened during git tag message process: ${stderr}');
+    }
 
-    echoMessage.stdout.pipe(gitTag.stdin);
+    await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
+
+    // remove the file
+    stderr = await deleteFile(tempFile);
+    if(stderr){
+      throw new Error('Some error happened during git tag message process: ${stderr}');
+    }
+  
+    console.log(`Tag ${actualTag} successfully created...`);
   }
+  
 }
 
 module.exports = main;
-//main(null, '0.0.1');
