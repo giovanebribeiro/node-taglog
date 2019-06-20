@@ -37,16 +37,21 @@ async function main(argv){
       throw err;
     }
   }
-
-  const options = explorer.searchSync(pkgPath) || {}; 
-  debug('options object = ', options);
-
-  const lineFormat = options.format || '* %h %s';
-  const output = options.output || 'tag'
-  const tagPrefix = options.tagPrefix || 'v';
-
+  
   if(!actualTag) throw new Error('The actual tag is required.');
   debug('actualTag = ', actualTag);
+
+  const options = explorer.searchSync(pkgPath).config || {}; 
+  debug('options object = ', options);
+
+  const lineFormat = options.lineFormat || '* %h %s';
+  const output = options.outputType || 'tag'
+  const tagPrefix = options.tagPrefix || 'v';
+  let tagTitle = options.tagTitle || 'Release version ' + actualTag;
+
+  debug(`tagTitle before: ${tagTitle}`);
+  tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
+  debug(`tagTitle after: ${tagTitle}`);
 
   console.log(`Processing ${actualTag} tag...`);
 

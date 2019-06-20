@@ -8,7 +8,8 @@
   },
   "taglog": {
     "lineFormat": "* %h %s",
-    "tagPrefix": "v"
+    "tagPrefix": "v",
+    "tagTitle": "Custom release version title %s"
   },
   "scripts": {
     "start": "DEBUG=taglog:* ./bin.js",
