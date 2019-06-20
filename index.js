@@ -23,45 +23,7 @@ async function execCommand(cmd){
   return stdout;
 }
 
-async function main(argv){
-
-  const actualTag = argv[0];
-  const scriptPath = __dirname;
-
-  const pkgPath = path.resolve(scriptPath.split('node_modules')[0]);
-  debug('pkgPath = ', pkgPath);
-  try{
-    readPkg.sync(pkgPath, { normalize: false }); // test if packa.json exists
-  } catch(err){
-    if(err.code !== 'ENOENT'){
-      throw err;
-    }
-  }
-  
-  if(!actualTag) throw new Error('The actual tag is required.');
-  debug('actualTag = ', actualTag);
-
-  const options = explorer.searchSync(pkgPath).config || {}; 
-  debug('options object = ', options);
-
-  const lineFormat = options.lineFormat || '* %h %s';
-  const output = options.outputType || 'tag'
-  const tagPrefix = options.tagPrefix || 'v';
-  let tagTitle = options.tagTitle || 'Release version ' + actualTag;
-
-  debug(`tagTitle before: ${tagTitle}`);
-  tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
-  debug(`tagTitle after: ${tagTitle}`);
-
-  console.log(`Processing ${actualTag} tag...`);
-
-  let nLine = '\n';
-  if(process.platform === 'win32') nLine = '\r' + nLine;
-  
-  if(!ce('git')){
-    throw new Error('Git is not installed. Please install git to use this package properly');
-  }
-
+async function generateChangelog(lineFormat){
   let lastTag = await execCommand('git describe --tags --abbrev=0');
   lastTag = lastTag.trim();
   debug('lastTag: ', lastTag);
@@ -69,30 +31,74 @@ async function main(argv){
   const changelog = await execCommand('git log --pretty=format:\'' + lineFormat + '\' ' + lastTag + '..HEAD');
   debug(`changelog: ${changelog}`);
 
-  let tagMessage = 'Release Version ' + actualTag + nLine + nLine;
+  return changelog;
+}
+
+async function mountTagMessage(tagTitle, changelog){
+  let nLine = '\n';
+  if(process.platform === 'win32') nLine = '\r' + nLine;
+  
+  let tagMessage = tagTitle + nLine + nLine;
   tagMessage += changelog;
   tagMessage += nLine;
   debug('tagMessage = \n', tagMessage);
 
-  if(output === 'tag'){
-    const tempFile = './.' + uuid();
+  const tempFile = './.' + uuid();
     
-    let stderr = await writeFile(tempFile, tagMessage);
-    if(stderr){
-      throw new Error('Some error happened during git tag message process: ${stderr}');
-    }
+  let stderr = await writeFile(tempFile, tagMessage);
+  if(stderr){
+    throw new Error('Some error happened during git tag message process: ${stderr}');
+  }
 
-    await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
+  return tempFile;
+}
 
-    // remove the file
-    stderr = await deleteFile(tempFile);
-    if(stderr){
-      throw new Error('Some error happened during git tag message process: ${stderr}');
+async function main(argv){
+
+  if(!ce('git')){
+    throw new Error('Git is not installed. Please install git to use this package properly');
+  }
+
+  const actualTag = argv[0];
+  const scriptPath = __dirname;
+  console.log(`Processing ${actualTag} tag...`);
+ 
+  if(!actualTag) throw new Error('The actual tag is required.');
+  debug('actualTag = ', actualTag);
+
+  const pkgPath = path.resolve(scriptPath.split('node_modules')[0]);
+  debug('pkgPath = ', pkgPath);
+  try{
+    readPkg.sync(pkgPath, { normalize: false }); // test if package.json exists
+  } catch(err){
+    if(err.code !== 'ENOENT'){
+      throw err;
     }
-  
-    console.log(`Tag ${actualTag} successfully created...`);
   }
   
+  const options = explorer.searchSync(pkgPath).config || {}; 
+  debug('options object = ', options);
+
+  const lineFormat = options.lineFormat || '* %h %s';
+  const tagPrefix = options.tagPrefix || 'v';
+  let tagTitle = options.tagTitle || 'Release version ' + actualTag;
+
+  const changelog = await generateChangelog(lineFormat);
+
+  debug(`tagTitle before: ${tagTitle}`);
+  tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
+  debug(`tagTitle after: ${tagTitle}`);
+
+  const tempFile = await mountTagMessage(tagTitle, changelog);
+  await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
+
+  // remove the file
+  let stderr = await deleteFile(tempFile);
+  if(stderr){
+    throw new Error('Some error happened during git tag message process: ${stderr}');
+  }
+
+  console.log(`Tag ${actualTag} successfully created...`);
 }
 
 module.exports = main;

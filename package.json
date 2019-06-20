@@ -1,10 +1,10 @@
 {
   "name": "taglog",
   "version": "0.0.1",
-  "description": "A tool to generate git tags with messages based on git commits since last tag",
+  "description": "A tool to generate git tags with messages based on git commits since last tag (changelog)",
   "main": "index.js",
   "bin": {
-    "taglog": "bin.js"
+    "taglog": "./bin.js"
   },
   "taglog": {
     "lineFormat": "* %h %s",
