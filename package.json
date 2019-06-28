@@ -1,6 +1,6 @@
 {
   "name": "@giovanebribeiro/taglog",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A tool to generate git tags with messages based on git commits since last tag (changelog)",
   "main": "index.js",
   "bin": {

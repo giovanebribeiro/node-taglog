@@ -27,7 +27,7 @@ async function generateChangelog(lineFormat){
   lastTag = lastTag.trim();
   debug('lastTag: ', lastTag);
   
-  const changelog = await execCommand('git log --pretty=format:\'' + lineFormat + '\' ' + lastTag + '..HEAD');
+  const changelog = await execCommand('git log --pretty=format:\"' + lineFormat + '\" ' + lastTag + '..HEAD');
   debug(`changelog: ${changelog}`);
 
   return changelog;
