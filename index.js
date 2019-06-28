@@ -6,7 +6,6 @@ const ce = require('command-exists').sync;
 const debug = require('debug')('taglog:index.js');
 const path = require('path');
 const readPkg = require('read-pkg');
-const explorer = require('cosmiconfig')('taglog');
 const uuid = require('uuid/v1');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
@@ -68,15 +67,16 @@ async function main(argv){
 
   const pkgPath = path.resolve(scriptPath.split('node_modules')[0]);
   debug('pkgPath = ', pkgPath);
+  var pkg = {};
   try{
-    readPkg.sync(pkgPath, { normalize: false }); // test if package.json exists
+    pkg = readPkg.sync(pkgPath, { normalize: false }); // test if package.json exists
   } catch(err){
     if(err.code !== 'ENOENT'){
       throw err;
     }
   }
   
-  const options = explorer.searchSync(pkgPath).config || {}; 
+  const options = pkg.taglog || {}; 
   debug('options object = ', options);
 
   const lineFormat = options.lineFormat || '* %h %s';
