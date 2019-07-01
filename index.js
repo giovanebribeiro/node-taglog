@@ -96,7 +96,7 @@ async function main(argv){
   tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
   debug(`tagTitle after: ${tagTitle}`);
 
-  const tempFile = await mountTagMessage(tagTitle, changelog);
+  const tempFile = await mountTagMessage(tagTitle, changelog, options.commitPreset);
   /*await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
 
   // remove the file

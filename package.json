@@ -9,7 +9,8 @@
   "taglog": {
     "lineFormat": "* %h %s",
     "tagPrefix": "v",
-    "tagTitle": "Custom release version title %s"
+    "tagTitle": "Custom release version title %s",
+    "commitPreset": "angular"
   },
   "scripts": {
     "start": "DEBUG=taglog:* ./bin.js",
