@@ -10,6 +10,7 @@ const uuid = require('uuid/v1');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 const deleteFile = util.promisify(fs.unlink);
+const conventionalChangelog = require('conventional-changelog');
 
 async function execCommand(cmd){
   debug('run command: ', cmd)
@@ -33,7 +34,7 @@ async function generateChangelog(lineFormat){
   return changelog;
 }
 
-async function mountTagMessage(tagTitle, changelog){
+async function mountTagMessage(tagTitle, changelog, convChangelogPreset){
   let nLine = '\n';
   if(process.platform === 'win32') nLine = '\r' + nLine;
   
@@ -43,12 +44,18 @@ async function mountTagMessage(tagTitle, changelog){
   debug('tagMessage = \n', tagMessage);
 
   const tempFile = './.' + uuid();
-    
-  let stderr = await writeFile(tempFile, tagMessage);
-  if(stderr){
-    throw new Error('Some error happened during git tag message process: ${stderr}');
-  }
 
+  if(convChangelogPreset){
+    conventionalChangelog({
+      preset: convChangelogPreset
+    }).pipe(fs.createWriteStream(tempFile)); 
+  }else{
+    let stderr = await writeFile(tempFile, tagMessage);
+    if(stderr){
+      throw new Error('Some error happened during git tag message process: ${stderr}');
+    }
+  }
+  
   return tempFile;
 }
 
@@ -90,13 +97,13 @@ async function main(argv){
   debug(`tagTitle after: ${tagTitle}`);
 
   const tempFile = await mountTagMessage(tagTitle, changelog);
-  await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
+  /*await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
 
   // remove the file
   let stderr = await deleteFile(tempFile);
   if(stderr){
     throw new Error('Some error happened during git tag message process: ${stderr}');
-  }
+  }*/
 
   console.log(`Tag ${actualTag} successfully created...`);
 }
