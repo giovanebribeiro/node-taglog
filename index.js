@@ -10,7 +10,6 @@ const uuid = require('uuid/v1');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 const deleteFile = util.promisify(fs.unlink);
-const conventionalChangelog = require('conventional-changelog');
 
 async function execCommand(cmd){
   debug('run command: ', cmd)
@@ -45,15 +44,9 @@ async function mountTagMessage(tagTitle, changelog, convChangelogPreset){
 
   const tempFile = './.' + uuid();
 
-  if(convChangelogPreset){
-    conventionalChangelog({
-      preset: convChangelogPreset
-    }).pipe(fs.createWriteStream(tempFile)); 
-  }else{
-    let stderr = await writeFile(tempFile, tagMessage);
-    if(stderr){
-      throw new Error('Some error happened during git tag message process: ${stderr}');
-    }
+  let stderr = await writeFile(tempFile, tagMessage);
+  if(stderr){
+    throw new Error('Some error happened during git tag message process: ${stderr}');
   }
   
   return tempFile;
