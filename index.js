@@ -10,8 +10,6 @@ const uuid = require('uuid/v1');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 const deleteFile = util.promisify(fs.unlink);
-const Readable = require('stream').Readable;
-const commitParser = require('conventional-commits-parser');
 
 async function execCommand(cmd){
   debug('run command: ', cmd)
@@ -28,37 +26,35 @@ async function generateChangelog(options){
   let lastTag = await execCommand('git describe --tags --abbrev=0');
   lastTag = lastTag.trim();
   debug('lastTag: ', lastTag);
-  
-  const changelog = await execCommand('git log --pretty=format:\"' + options.lineFormat + '\" ' + lastTag + '..HEAD');
-  
-  debug(`changelog: ${changelog}`);
+
+  let lf = options.lineFormat || '* %h %s'
+  const changelog = await execCommand('git log --pretty=format:\"' + lf + '\" ' + lastTag + '..HEAD');
   return changelog;
 }
 
-async function mountTagMessage(changelog, options){
+async function mountTagMessage(changelog, actualTag, options){
   let nLine = '\n';
   if(process.platform === 'win32') nLine = '\r' + nLine;
 
-  const readStream = new Readable();
-  readStream._read = () => {};
-  readStream.push(changelog)
-    .pipe(commitParser(options))
-    .pipe(debug);
+  debug('changelog = \n', changelog);
   
-  let tagMessage = options.tagTitle + nLine + nLine;
+  let tt = options.tagTitle || 'Release version ' + actualTag;
+  debug(`tagTitle before: ${tt}`);
+  tt = tt.replace(/%s/g, actualTag); // replace all occurences
+  debug(`tagTitle after: ${tt}`);
+
+  const tempFile = './.' + uuid();
+  let tagMessage = tt + nLine + nLine;
+
   tagMessage += changelog;
   tagMessage += nLine;
   debug('tagMessage = \n', tagMessage);
 
-  const tempFile = './.' + uuid();
-
-  
-
   let stderr = await writeFile(tempFile, tagMessage);
   if(stderr){
-    throw new Error('Some error happened during git tag message process: ${stderr}');
+    throw new Error(`Error when mount tag message: ${stderr}`);
   }
-  
+
   return tempFile;
 }
 
@@ -89,24 +85,17 @@ async function main(argv){
   const options = pkg.taglog || {}; 
   debug('options object = ', options);
 
-  const lineFormat = options.lineFormat || '%s';
-  const tagPrefix = options.tagPrefix || 'v';
-  let tagTitle = options.tagTitle || 'Release version ' + actualTag;
-
   const changelog = await generateChangelog(options);
 
-  debug(`tagTitle before: ${tagTitle}`);
-  tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
-  debug(`tagTitle after: ${tagTitle}`);
-
-  const tempFile = await mountTagMessage(tagTitle, changelog, options.commitPreset);
-  /*await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
+  const tagPrefix = options.tagPrefix || 'v';
+  const tempFile = await mountTagMessage(changelog, actualTag, options);
+  await execCommand('git tag -a ' + tagPrefix + actualTag + ' --file=' + tempFile);
 
   // remove the file
   let stderr = await deleteFile(tempFile);
   if(stderr){
-    throw new Error('Some error happened during git tag message process: ${stderr}');
-  }*/
+    throw new Error(`Some error happened during git tag message process: ${stderr}`);
+  }
 
   console.log(`Tag ${actualTag} successfully created...`);
 }
