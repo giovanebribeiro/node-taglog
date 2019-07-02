@@ -10,6 +10,8 @@ const uuid = require('uuid/v1');
 const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 const deleteFile = util.promisify(fs.unlink);
+const Readable = require('stream').Readable;
+const commitParser = require('conventional-commits-parser');
 
 async function execCommand(cmd){
   debug('run command: ', cmd)
@@ -22,27 +24,35 @@ async function execCommand(cmd){
   return stdout;
 }
 
-async function generateChangelog(lineFormat){
+async function generateChangelog(options){
   let lastTag = await execCommand('git describe --tags --abbrev=0');
   lastTag = lastTag.trim();
   debug('lastTag: ', lastTag);
   
-  const changelog = await execCommand('git log --pretty=format:\"' + lineFormat + '\" ' + lastTag + '..HEAD');
+  const changelog = await execCommand('git log --pretty=format:\"' + options.lineFormat + '\" ' + lastTag + '..HEAD');
+  
   debug(`changelog: ${changelog}`);
-
   return changelog;
 }
 
-async function mountTagMessage(tagTitle, changelog, convChangelogPreset){
+async function mountTagMessage(changelog, options){
   let nLine = '\n';
   if(process.platform === 'win32') nLine = '\r' + nLine;
+
+  const readStream = new Readable();
+  readStream._read = () => {};
+  readStream.push(changelog)
+    .pipe(commitParser(options))
+    .pipe(debug);
   
-  let tagMessage = tagTitle + nLine + nLine;
+  let tagMessage = options.tagTitle + nLine + nLine;
   tagMessage += changelog;
   tagMessage += nLine;
   debug('tagMessage = \n', tagMessage);
 
   const tempFile = './.' + uuid();
+
+  
 
   let stderr = await writeFile(tempFile, tagMessage);
   if(stderr){
@@ -79,11 +89,11 @@ async function main(argv){
   const options = pkg.taglog || {}; 
   debug('options object = ', options);
 
-  const lineFormat = options.lineFormat || '* %h %s';
+  const lineFormat = options.lineFormat || '%s';
   const tagPrefix = options.tagPrefix || 'v';
   let tagTitle = options.tagTitle || 'Release version ' + actualTag;
 
-  const changelog = await generateChangelog(lineFormat);
+  const changelog = await generateChangelog(options);
 
   debug(`tagTitle before: ${tagTitle}`);
   tagTitle = tagTitle.replace(/%s/g, actualTag); // replace all occurences
