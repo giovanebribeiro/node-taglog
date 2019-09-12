@@ -12,6 +12,7 @@
     "tagTitle": "Release version %s"
   },
   "scripts": {
+    "helps": "taglog --help",
     "start": "DEBUG=taglog:* ./bin.js",
     "build": "npm version --no-git-tag-version ",
     "version": "git commit -am \"build: release version\" && ./bin.js $npm_package_version",
