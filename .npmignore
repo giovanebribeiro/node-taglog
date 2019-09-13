@@ -7,3 +7,4 @@ test
 README.md
 .gitignore
 .travis.yml
+vim-markdown-preview.*

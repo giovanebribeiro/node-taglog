@@ -61,4 +61,4 @@ typings/
 .next
 
 # vim-markdown-preview.html
-vim-markdown-preview.html
+/vim-markdown-preview.html
