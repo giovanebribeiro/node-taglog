@@ -11,12 +11,12 @@ const fs = require('fs');
 const writeFile = util.promisify(fs.writeFile);
 const deleteFile = util.promisify(fs.unlink);
 
-async function execCommand(cmd){
+async function execCommand(cmd) {
   debug('run command: ', cmd)
   const { stdout, stderr } = await exec(cmd);
 
   if(stderr){
-    throw new Error('Error to execute command: ${stderr}');
+    throw new Error(`Error to execute command: ${stderr}`);
   }
 
   return stdout;
